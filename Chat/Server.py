@@ -5,19 +5,34 @@ clients=[]
 names =[]
 
 def clientThread(client):
+    initname = client.recv(1024).decode('utf-8')
     bayrak = True
     while True:
         try:
-            message = client.recv(1024).decode('utf8')
             if bayrak:
-                names.append(message)
-                print(message,'baglandi')
+                names.append(initname)
+                print(initname, 'baglandi')
                 bayrak = False
+
+            if client.recv(1024).decode('utf8') == "kanka fotoğraf geliyo":
+                filepath = client.recv(1024).decode('utf-8')
+                filepath = filepath.split("/")[-1]
+                file = open(filepath, "wb")
+                image_chunk = client.recv(1024)
+
+                while image_chunk:
+                    file.write(image_chunk)
+                    image_chunk = client.recv(1024)
+                file.close()
+
+            message = client.recv(1024).decode('utf-8')
+
+
             for c in clients:
                 if c != client:
                     index = clients.index(client)
                     name = names[index]
-                    c.send((name + ':' + message).encode('utf8'))
+                    c.send((name + ':' + message).encode('utf-8'))
 
         except:
             index = clients.index(client)
@@ -30,8 +45,8 @@ def clientThread(client):
 
 server = socket(AF_INET, SOCK_STREAM)
 
-ip= '127.0.0.1'
-port = 8080
+ip= 'localhost'
+port = 8081
 
 server.bind((ip,port))
 server.listen()

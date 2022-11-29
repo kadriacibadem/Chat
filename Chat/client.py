@@ -1,18 +1,18 @@
 import os.path
-import tkinter
 from socket import *
 from threading import *
 from tkinter import *
 from tkinter import filedialog as fd
 
 client = socket(AF_INET, SOCK_STREAM)
-ip= '127.0.0.1'
-port = 8080
+ip= 'localhost'
+port = 8081
 
 client.connect((ip, port))
 
 pencere = Tk()
 pencere.title('Chat')
+
 
 messages =Text(pencere, width=50)
 messages.grid(row=0, column=0, padx=10, pady=10)
@@ -25,15 +25,21 @@ yourMessage.select_range(0, END)
 def sendMessage():
     clientMessage = yourMessage.get()
     messages.insert(END, '\n'+ 'Sen: ' + clientMessage)
-    client.send(clientMessage.encode('utf8'))
+    client.send(clientMessage.encode('utf-8'))
     yourMessage.delete(0, END)
 
-def openFile():
-    filepath= fd.askopenfilename()
-    file=open(filepath)
-    name = os.path.basename(file.name)
-    messages.insert(END, '\n'+ 'Sen: ' + name)
 
+def openFile():
+    client.send("kanka fotoğraf geliyo".encode("utf-8"))
+    filepath = fd.askopenfilename()
+    client.send(filepath.encode("utf-8"))
+    file = open(filepath,"rb")
+    data = file.read(1024)
+
+    while data:
+        client.send(data)
+        data = file.read(1024)
+    file.close()
 
 bmessageGonder = Button(pencere, text= 'Gonder',command=sendMessage)
 bmessageGonder.grid(row=2,column=0,padx=5,pady=5)
@@ -45,7 +51,7 @@ dosyaSec.grid(row=3,column=0,padx=5,pady=5)
 
 def recvMessage():
     while True:
-        serverMessage = client.recv(1024).decode('utf8')
+        serverMessage = client.recv(1024).decode('utf-8')
         messages.insert(END, '\n' + serverMessage)
 
 
