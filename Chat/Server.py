@@ -1,32 +1,49 @@
 from socket import *
 from threading import *
+from time import sleep
 
-clients=[]
-names =[]
+clients = []
+names = []
 
 def clientThread(client):
     initname = client.recv(1024).decode('utf-8')
     bayrak = True
+
     while True:
         try:
+
             if bayrak:
                 names.append(initname)
                 print(initname, 'baglandi')
                 bayrak = False
 
-            if client.recv(1024).decode('utf8') == "kanka fotoğraf geliyo":
+            message = client.recv(1024).decode('utf-8')
+
+            if message == "kanka fotoğraf geliyo":
                 filepath = client.recv(1024).decode('utf-8')
                 filepath = filepath.split("/")[-1]
                 file = open(filepath, "wb")
-                image_chunk = client.recv(1024)
-
-                while image_chunk:
-                    file.write(image_chunk)
-                    image_chunk = client.recv(1024)
+                image_chunk = client.recv(40960000)
+                file.write(image_chunk)
                 file.close()
-
-            message = client.recv(1024).decode('utf-8')
-
+                """
+                server.send("kanka fotoğraf geliyo".encode("utf-8"))
+                server.send(filepath.encode("utf-8"))
+                file = open(filepath, "rb")
+                data = file.read(40960000)
+                print("send data öncesi")
+                server.send(data)
+                print("send data sonrası")
+                """
+                for c in clients:
+                    if c != client:
+                        index = clients.index(client)
+                        name = names[index]
+                        c.send("kanka fotoğraf geliyo".encode("utf-8"))
+                        c.send(filepath.encode("utf-8"))
+                        file = open(filepath, "rb")
+                        data = file.read(40960000)
+                        c.send(data)
 
             for c in clients:
                 if c != client:
@@ -44,17 +61,16 @@ def clientThread(client):
 
 
 server = socket(AF_INET, SOCK_STREAM)
-
-ip= 'localhost'
+ip = 'localhost'
 port = 8081
 
-server.bind((ip,port))
+server.bind((ip, port))
 server.listen()
 print('Server dinlemede')
 
 while True:
     client, address = server.accept()
     clients.append(client)
-    print('Baglanti yapildi', address[0]+ ':' + str(address[1]))
+    print('Baglanti yapildi', address[0] + ':' + str(address[1]))
     thread = Thread(target=clientThread, args=(client,))
     thread.start()
