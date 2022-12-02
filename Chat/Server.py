@@ -19,7 +19,7 @@ def clientThread(client):
 
             message = client.recv(1024).decode('utf-8')
 
-            if message == "kanka fotoğraf geliyo":
+            if message == "kanka fotograf geliyo":
                 filepath = client.recv(1024).decode('utf-8')
                 filepath = filepath.split("/")[-1]
                 file = open(filepath, "wb")
@@ -27,7 +27,7 @@ def clientThread(client):
                 file.write(image_chunk)
                 file.close()
                 """
-                server.send("kanka fotoğraf geliyo".encode("utf-8"))
+                server.send("kanka fotograf geliyo".encode("utf-8"))
                 server.send(filepath.encode("utf-8"))
                 file = open(filepath, "rb")
                 data = file.read(40960000)
@@ -35,11 +35,12 @@ def clientThread(client):
                 server.send(data)
                 print("send data sonrası")
                 """
+                message = ""
                 for c in clients:
                     if c != client:
+                        c.send("kanka fotograf geliyo".encode("utf-8"))
                         index = clients.index(client)
                         name = names[index]
-                        c.send("kanka fotoğraf geliyo".encode("utf-8"))
                         c.send(filepath.encode("utf-8"))
                         file = open(filepath, "rb")
                         data = file.read(40960000)

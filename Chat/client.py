@@ -31,7 +31,7 @@ def sendMessage():
 
 
 def openFile():
-    client.send("kanka fotoğraf geliyo".encode("utf-8"))
+    client.send("kanka fotograf geliyo".encode("utf-8"))
     filepath = fd.askopenfilename()
     client.send(filepath.encode("utf-8"))
     file = open(filepath,"rb")
@@ -48,20 +48,18 @@ dosyaSec.grid(row=3,column=0,padx=5,pady=5)
 
 
 def recvMessage():
-    global my_image
     while True:
         serverMessage = client.recv(1024).decode('utf-8')
-        if serverMessage == "kanka fotoğraf geliyo":
-            print("if içerisi")
+        if serverMessage == "kanka fotograf geliyo":
             filepath = client.recv(1024).decode('utf-8')
             file = open("./images/"+filepath, "wb")
             image_chunk = client.recv(40960000)
             file.write(image_chunk)
             file.close()
-            print(filepath)
-            #my_image = ImageTk.PhotoImage(Image.open(requests.get(filepath, stream=True).raw))
-            #position = messages.index(INSERT)
-            #messages.image_create(END, image=my_image)
+
+            my_image = ImageTk.PhotoImage(Image.open("./images/"+filepath))
+            position = messages.index(INSERT)
+            messages.image_create(END, image=my_image)
 
         else:
             messages.insert(END, '\n' + serverMessage)
