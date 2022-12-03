@@ -4,9 +4,10 @@ from threading import *
 from tkinter import *
 from tkinter import filedialog as fd
 from PIL import ImageTk, Image
-import requests
+
+
 client = socket(AF_INET, SOCK_STREAM)
-ip= 'localhost'
+ip= '192.168.1.103'
 port = 8081
 
 client.connect((ip, port))
@@ -14,7 +15,7 @@ client.connect((ip, port))
 pencere = Tk()
 pencere.title('Chat')
 
-
+global my_image
 messages =Text(pencere, width=50)
 messages.grid(row=0, column=0, padx=10, pady=10)
 yourMessage = Entry(pencere, width=50)
@@ -31,14 +32,21 @@ def sendMessage():
 
 
 def openFile():
+    global my_image
     client.send("kanka fotograf geliyo".encode("utf-8"))
     filepath = fd.askopenfilename()
+
     client.send(filepath.encode("utf-8"))
     file = open(filepath,"rb")
     data = file.read(40960000)
 
     client.send(data)
     file.close()
+
+    my_image = ImageTk.PhotoImage(Image.open(filepath))
+    position = messages.index(INSERT)
+    messages.image_create(END, image=my_image)
+
 bmessageGonder = Button(pencere, text= 'Gonder',command=sendMessage)
 bmessageGonder.grid(row=2,column=0,padx=5,pady=5)
 

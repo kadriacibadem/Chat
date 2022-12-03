@@ -62,7 +62,7 @@ def clientThread(client):
 
 
 server = socket(AF_INET, SOCK_STREAM)
-ip = 'localhost'
+ip = '192.168.1.103'
 port = 8081
 
 server.bind((ip, port))
